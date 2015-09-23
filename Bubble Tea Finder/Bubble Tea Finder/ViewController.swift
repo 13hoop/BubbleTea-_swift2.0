@@ -7,20 +7,48 @@
 //
 
 import UIKit
+import CoreData
 
-class ViewController: UIViewController {
+class ViewController: UIViewController,FilterViewControllerDelegate {
   
   @IBOutlet weak var tableView: UITableView!
   var coreDataStack: CoreDataStack!
-  
+	
+	var fetchRequest: NSFetchRequest!
+	var venues: [Venue]!
+	
   override func viewDidLoad() {
     super.viewDidLoad()
-
+		
+		// 关联editor的request 
+		// －－ 通过model ＋ Xcode辅助 －－ 注意错误'Can't modify a named fetch request in an immutable model.'
+//		fetchRequest = coreDataStack.model.fetchRequestTemplateForName("FetchRequest")
+		
+		// 创建请求
+		fetchRequest = NSFetchRequest(entityName: "Venue")
+		
+		
+		// 执行和加载
+		fetchAndReload()
+		
+		
   }
-  
+	
+	func  fetchAndReload() {
+		do {
+			let results = try coreDataStack.context.executeFetchRequest(fetchRequest) as! [Venue]
+			venues = results
+		}catch let error as NSError {
+			print("未能取得结果\(error),\(error.userInfo)")
+		}
+		
+		tableView.reloadData()
+	}
+	
+	// MARK: DataSource
   func tableView(tableView: UITableView?,
     numberOfRowsInSection section: Int) -> Int {
-      return 10
+      return venues.count
   }
   
   func tableView(tableView: UITableView!,
@@ -28,23 +56,49 @@ class ViewController: UIViewController {
     indexPath: NSIndexPath!) -> UITableViewCell! {
       
       let cell = tableView.dequeueReusableCellWithIdentifier("VenueCell") as UITableViewCell!
-      cell.textLabel!.text = "Bubble Tea Venue"
-      cell.detailTextLabel!.text = "Price Info"
+			// 装载数据
+			let venue = venues[indexPath.row]
+      cell.textLabel!.text = venue.name
+      cell.detailTextLabel!.text = venue.priceInfo.priceCategory
       
       return cell
   }
 	
+	// MARK: segue
   override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
     
     if segue.identifier == "toFilterViewController" {
       
       let navController = segue.destinationViewController as! UINavigationController
       let filterVC = navController.topViewController as! FilterViewController
-    }
+
+			// 传递stack
+			filterVC.coreDataStack = coreDataStack
+			// 设置代理
+			filterVC.delegate = self
+		}
   }
   
   @IBAction func unwindToVenuListViewController(segue: UIStoryboardSegue) {
     
   }
-}
+	
+	//MARK:- FilterViewControllerDelegate methods
+	func filterViewController(filter: FilterViewController, didSelectPredicate predicate: NSPredicate?, sortDescriptor: NSSortDescriptor?) {
+		
+		fetchRequest.predicate = nil
+		fetchRequest.sortDescriptors = nil
 
+		if let fetchPredicate = predicate {
+			fetchRequest.predicate = fetchPredicate
+		}
+		
+		if let sr = sortDescriptor {
+			fetchRequest.sortDescriptors = [sr]
+		}
+		
+		fetchAndReload()
+	}
+	
+	
+}

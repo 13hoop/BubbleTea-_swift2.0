@@ -77,6 +77,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B4E039FF1BB0ED6000C0E46A /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				FE9C62C219AA94ED0083EFDE /* seed.json */,
+				FE8E30E419AAC15A004AD40B /* Stats.swift */,
+				FE8E30E219AAC15A004AD40B /* Venue.swift */,
+				FE8E30E019AAC0C5004AD40B /* Location.swift */,
+				FE8E30DE19AAC0C5004AD40B /* PriceInfo.swift */,
+				FE8E30DC19AAC0C5004AD40B /* Category.swift */,
+			);
+			name = Data;
+			sourceTree = "<group>";
+		};
 		FE74E08A19AA868F00F39627 = {
 			isa = PBXGroup;
 			children = (
@@ -106,12 +119,7 @@
 				B4E039FD1BAFFB1600C0E46A /* Launch Screen.storyboard */,
 				FE8E30D419AAA6EA004AD40B /* Model.xcdatamodeld */,
 				FE74E09F19AA868F00F39627 /* Images.xcassets */,
-				FE8E30E419AAC15A004AD40B /* Stats.swift */,
-				FE8E30E219AAC15A004AD40B /* Venue.swift */,
-				FE8E30E019AAC0C5004AD40B /* Location.swift */,
-				FE8E30DE19AAC0C5004AD40B /* PriceInfo.swift */,
-				FE8E30DC19AAC0C5004AD40B /* Category.swift */,
-				FE9C62C219AA94ED0083EFDE /* seed.json */,
+				B4E039FF1BB0ED6000C0E46A /* Data */,
 				FE8E30D219AA9AFC004AD40B /* attribution.txt */,
 				FE74E09619AA868F00F39627 /* Supporting Files */,
 				FE8E30D719AAC06C004AD40B /* Bubble Tea Finder-Bridging-Header.h */,

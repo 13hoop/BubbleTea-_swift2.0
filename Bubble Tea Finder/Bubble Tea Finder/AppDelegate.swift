@@ -44,8 +44,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     if (results == 0) {
       
-      var fetchError: NSError? = nil
-      
+//      var fetchError: NSError? = nil
+			
       let results =
         (try! coreDataStack.context.executeFetchRequest(fetchRequest)) as! [Venue]
       
@@ -58,26 +58,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       importJSONSeedData()
     }
   }
-  
+	
+	/*
+		从JSON读取数据
+	*/
   func importJSONSeedData() {
     let jsonURL = NSBundle.mainBundle().URLForResource("seed", withExtension: "json")
     let jsonData = NSData(contentsOfURL: jsonURL!)
     
-    var error: NSError? = nil
-    let jsonDict = (try! NSJSONSerialization.JSONObjectWithData(jsonData!, options: [])) as! NSDictionary
-    
+		// JSON全部映射到字典
+		let jsonDict = (try! NSJSONSerialization.JSONObjectWithData(jsonData!, options: [])) as! NSDictionary
+		
+		// 获取各个实体
     let venueEntity = NSEntityDescription.entityForName("Venue", inManagedObjectContext: coreDataStack.context)
-
     let locationEntity = NSEntityDescription.entityForName("Location", inManagedObjectContext: coreDataStack.context)
-
     let categoryEntity = NSEntityDescription.entityForName("Category", inManagedObjectContext: coreDataStack.context)
-
     let priceEntity = NSEntityDescription.entityForName("PriceInfo", inManagedObjectContext: coreDataStack.context)
-
     let statsEntity = NSEntityDescription.entityForName("Stats", inManagedObjectContext: coreDataStack.context)
-
+		
+		// 截取Key值“response －> venues”
     let jsonArray = jsonDict.valueForKeyPath("response.venues") as! NSArray
-    
     for jsonDictionary in jsonArray {
 
       let venueName = jsonDictionary["name"] as? String
@@ -87,24 +87,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       let locationDict = jsonDictionary["location"] as! NSDictionary
       let priceDict = jsonDictionary["price"] as! NSDictionary
       let statsDict = jsonDictionary["stats"] as! NSDictionary
-
+			// location
       let location = Location(entity: locationEntity!, insertIntoManagedObjectContext: coreDataStack.context)
       location.address = locationDict["address"] as? String
       location.city = locationDict["city"] as? String
       location.state = locationDict["state"] as? String
       location.zipcode = locationDict["postalCode"] as? String
       location.distance = locationDict["distance"] as? NSNumber
-
+			// category
       let category = Category(entity: categoryEntity!, insertIntoManagedObjectContext: coreDataStack.context)
-
+			// priceInfo
       let priceInfo = PriceInfo(entity: priceEntity!, insertIntoManagedObjectContext: coreDataStack.context)
       priceInfo.priceCategory = priceDict["currency"] as? String
-      
+      // stats
       let stats = Stats(entity: statsEntity!, insertIntoManagedObjectContext: coreDataStack.context)
       stats.checkinsCount = statsDict["checkinsCount"] as? NSNumber
       stats.usersCount = statsDict["userCount"] as? NSNumber
       stats.tipCount = statsDict["tipCount"] as? NSNumber
-
+			// venue
       let venue = Venue(entity: venueEntity!, insertIntoManagedObjectContext: coreDataStack.context)
       venue.name = venueName
       venue.phone = venuePhone
@@ -118,5 +118,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     coreDataStack.saveContext()
   }
 
+/*
+	func demonstratedTheFourWayToSetUpAFetchRequest() {
+		// 1
+		let fetchRequest1 = NSFetchRequest()
+		let entity = NSEntityDescription.entityForName("XXX", inManagedObjectContext: managedObjectContext)
+		fetchRequest1.entity = entity!
+		
+		// 2 
+		let fetchRequest2 = NSFetchRequest(entityName: "XXX")
+		
+		// 3 
+		let fetchRequest3 = managedObjectModel.fetchRequestTemplateName("peopleFR")
+		
+		// 4 
+		let fetchRequest4 = managedObjectModel.fetchRequestFromTemplateWithName("peropleFR", substitutionVariables:["NAME" : "Ray"])
+		
+	}
+*/
 }
 
