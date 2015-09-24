@@ -88,11 +88,16 @@ class FilterViewController: UITableViewController {
 	}
 	
 	
-	// 使用CountResultType方式，返回一个只包含总数目的数组
-	// 当然你也可以返回所有的[Venue],在得出数量，但当数据巨大时，
-	// CountResultType方式就是一种高效的选择（is more memory- efficient）
+	/* 使用CountResultType方式，返回一个只包含总数目的数组
+	
+		当然你也可以返回所有的[Venue],在得出数量，但当数据巨大时，
+		CountResultType方式就是一种高效的选择（is more memory- efficient）
+	－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+	executeFetchRequest(fetchRequest) ＋ CountResultType
+	或者 直接用
+	countForFetchRequest(fetchRequest, error: &error)方法也可以
+	*/
 	func populateCheapVenueCountLable() {
-		
 		let fetchRequest = NSFetchRequest(entityName: "Venue")
 		fetchRequest.resultType = NSFetchRequestResultType.CountResultType
 		fetchRequest.predicate = cheapVenuePredicate
@@ -111,10 +116,8 @@ class FilterViewController: UITableViewController {
 		let fetchRequest = NSFetchRequest(entityName: "Venue")
 		fetchRequest.resultType = NSFetchRequestResultType.CountResultType
 		fetchRequest.predicate = moderateVenuePredicate
-		// 执行请求
 		do {
 			let results = try coreDataStack.context.executeFetchRequest(fetchRequest) as! [NSNumber]
-			// 从数组中取出
 			let count = results[0].integerValue
 			secondPriceCategoryLabel.text = "\(count) bubbke tea places"
 		}catch let error as NSError {
@@ -122,11 +125,9 @@ class FilterViewController: UITableViewController {
 		}
 	}
 	func populateExpensiveVenueCountLable() {
-		
 		let fetchRequest = NSFetchRequest(entityName: "Venue")
 		fetchRequest.resultType = NSFetchRequestResultType.CountResultType
 		fetchRequest.predicate = expensiveVenuePredicate
-		
 		// 执行请求
 		do {
 			let results = try coreDataStack.context.executeFetchRequest(fetchRequest) as! [NSNumber]
@@ -143,18 +144,29 @@ class FilterViewController: UITableViewController {
 		let cell = tableView.cellForRowAtIndexPath(indexPath)!
 		// 不同的cell，对应不用的predicate
 		switch cell {
+		// PRICE section
 		case cheapVenueCell:
 				selectedPredicate = cheapVenuePredicate
 		case moderateVenueCell:
 			selectedPredicate = moderateVenuePredicate
 		case expensiveVenueCell:
 			selectedPredicate = expensiveVenuePredicate
+		// POPULATE section
 		case offeringDealCell:
 			selectedPredicate = offeringDealPredicate
 		case walkingDistanceCell:
 			selectedPredicate = walkingDistancePredicate
 		case userTipsCell:
 			selectedPredicate = hasUserTipsPredicate
+		// SORT section
+		case nameAZSortCell:
+			selectedSortDescriptor = nameSortDescriptor
+		case nameZASortCell: // 反着来
+			selectedSortDescriptor = nameSortDescriptor.reversedSortDescriptor as? NSSortDescriptor
+		case distanceSortCell:
+			selectedSortDescriptor = distanceSortDescriptor
+		case priceSortCell:
+			selectedSortDescriptor = priceSortDescriptor
 		default:
 			print("default case")
 		}
@@ -195,4 +207,25 @@ class FilterViewController: UITableViewController {
 		return pr
 		}()
 
+	//MARK: - lazy SortDescriptor
+	/*
+	key－－表示对谁排序
+	布尔的ascending－－指定降序还是升序
+	可选的selector－－针对其他特殊要求,不使用可选的selector时，系统会默认调用localizedStandardCompare 方法做一些刚刚够用的排序，如果有特殊要求，那就自己实现selector吧
+	*/
+	// 按姓名排序
+	lazy var nameSortDescriptor: NSSortDescriptor = {
+		var sd = NSSortDescriptor(key: "name", ascending: true, selector: "localizedStandardCompare:")
+		return sd
+	}()
+	// 按距离排序
+	lazy var distanceSortDescriptor: NSSortDescriptor = {
+		var sd = NSSortDescriptor(key: "location.distance", ascending: true)
+		return sd
+	}()
+	// 按假期排序
+	lazy var priceSortDescriptor: NSSortDescriptor = {
+		var sd = NSSortDescriptor(key: "piceInfo.priceCategory", ascending: true)
+		return sd
+	}()
  }
