@@ -15,7 +15,10 @@ class ViewController: UIViewController,FilterViewControllerDelegate {
   var coreDataStack: CoreDataStack!
 	
 	var fetchRequest: NSFetchRequest!
-	var venues: [Venue]!
+//	var venues: [Venue]!
+	var venues: [Venue]! = []
+	
+	var asyncFetchRequest: NSAsynchronousFetchRequest!
 	
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -24,14 +27,26 @@ class ViewController: UIViewController,FilterViewControllerDelegate {
 		// －－ 通过model ＋ Xcode辅助 －－ 注意错误'Can't modify a named fetch request in an immutable model.'
 //		fetchRequest = coreDataStack.model.fetchRequestTemplateForName("FetchRequest")
 		
-		// 创建请求
+		// 1 创建请求
 		fetchRequest = NSFetchRequest(entityName: "Venue")
 		
+		// 2 异步请求 ＋ 完成回调更新UI
+		asyncFetchRequest = NSAsynchronousFetchRequest(fetchRequest: fetchRequest, completionBlock: { (results: NSAsynchronousFetchResult) -> Void in
+			self.venues = results.finalResult as! [Venue]
+			self.tableView.reloadData()
+		})
+		
+		// 3 执行请求
+		do {
+			let results = try coreDataStack.context.executeRequest(asyncFetchRequest)
+			let persistentStoreResults = results
+			
+		}catch let error as NSError {
+			print("未能成功获取\(error),\(error.userInfo)")
+		}
 		
 		// 执行和加载
-		fetchAndReload()
-		
-		
+//		fetchAndReload()
   }
 	
 	func  fetchAndReload() {
