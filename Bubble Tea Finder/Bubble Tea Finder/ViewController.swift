@@ -23,10 +23,36 @@ class ViewController: UIViewController,FilterViewControllerDelegate {
   override func viewDidLoad() {
     super.viewDidLoad()
 		
-		// 关联editor的request 
-		// －－ 通过model ＋ Xcode辅助 －－ 注意错误'Can't modify a named fetch request in an immutable model.'
-//		fetchRequest = coreDataStack.model.fetchRequestTemplateForName("FetchRequest")
+		// 普通请求 注意更改上下文异步类型
+//		noramlFetch()
 		
+		// 异步请求
+//		asyncFetchRequest()
+		
+		// 批量无请求 ios8
+		batchNoFetch()
+  }
+	
+	// MARK: 批量无请求
+	func batchNoFetch() {
+		// 批量请求：指明更新属性 指明作用存储 指明结果类型
+		let batchUpdate = NSBatchUpdateRequest(entityName: "Venue")
+		batchUpdate.propertiesToUpdate = ["favorite": NSNumber(bool: true)]
+		batchUpdate.affectedStores = coreDataStack.psc.persistentStores
+		batchUpdate.resultType = NSBatchUpdateRequestResultType.UpdatedObjectsCountResultType
+		
+		// 执行 - 返回NSBatchUpdateResult
+		do {
+			let result = try coreDataStack.context.executeRequest(batchUpdate) as! NSBatchUpdateResult
+			print("更新记录：\(result.result)")
+		}catch let error as NSError {
+			print("未能批量更新\(error),\(error.userInfo)")
+		}
+		
+	}
+	
+	// MARK: 异步请求
+	func asynFetch() {
 		// 1 创建请求
 		fetchRequest = NSFetchRequest(entityName: "Venue")
 		
@@ -38,18 +64,26 @@ class ViewController: UIViewController,FilterViewControllerDelegate {
 		
 		// 3 执行请求
 		do {
-			let results = try coreDataStack.context.executeRequest(asyncFetchRequest)
-			let persistentStoreResults = results
-			
+			try coreDataStack.context.executeRequest(asyncFetchRequest)
 		}catch let error as NSError {
 			print("未能成功获取\(error),\(error.userInfo)")
 		}
+	}
+	
+	// MARK：普通请求
+	func noramlFetch() {
+	
+		// 关联editor的request
+		// －－ 通过model ＋ Xcode辅助 －－ 注意错误'Can't modify a named fetch request in an immutable model.'
+		//		fetchRequest = coreDataStack.model.fetchRequestTemplateForName("FetchRequest")
+		
+		// 创建请求
+		fetchRequest = NSFetchRequest(entityName: "Venue")
 		
 		// 执行和加载
-//		fetchAndReload()
-  }
-	
-	func  fetchAndReload() {
+		fetchAndReload()
+	}
+	func fetchAndReload() {
 		do {
 			let results = try coreDataStack.context.executeFetchRequest(fetchRequest) as! [Venue]
 			venues = results
